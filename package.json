@@ -1,5 +1,5 @@
 {
-  "name": "event-emitter",
+  "name": "@supercat1337/event-emitter",
   "version": "1.0.0",
   "description": "Event Emitter",
   "main": "index.js",
@@ -16,5 +16,10 @@
     "esbuild": "^0.20.2"
   },
   "type": "module",
-  "moduleResolution": "Node"
+  "moduleResolution": "Node",
+  "keywords": ["event emitter", "event bus"],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "homepage": "https://github.com/supercat911/event-emitter"
 }
