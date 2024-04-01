@@ -1,13 +1,11 @@
 {
   "name": "@supercat1337/event-emitter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Event Emitter",
   "main": "index.js",
   "scripts": {
     "test": "c8 ava",
-    "build": "npm run build_esm && npm run build_min_esm",
-    "build_esm": "esbuild src/EventEmitter.js --outfile=dist/event-emitter.esm.js",
-    "build_min_esm": "esbuild src/EventEmitter.js --minify --outfile=dist/event-emitter.min.esm.js"
+    "build": "node scripts/build.js"
   },
   "author": "Supercat",
   "license": "MIT",
@@ -17,7 +15,7 @@
     "esbuild": "^0.20.2"
   },
   "type": "module",
-  "moduleResolution": "Node",
+  "moduleResolution": "nodenext",
   "keywords": [
     "event emitter",
     "event bus"

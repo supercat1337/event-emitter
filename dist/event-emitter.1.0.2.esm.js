@@ -1,4 +1,5 @@
-class EventEmitter {
+// src/EventEmitter.js
+var EventEmitter = class {
   /** @type {Object.<string, TListener[]>} */
   events = {};
   /**
@@ -59,5 +60,7 @@ class EventEmitter {
       listener.apply(this, arguments);
     });
   }
-}
-export { EventEmitter };
+};
+export {
+  EventEmitter
+};
