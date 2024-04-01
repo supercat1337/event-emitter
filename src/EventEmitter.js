@@ -1,34 +1,19 @@
 // @ts-check
 
-/** @module EventEmitter */
-
 /**
 * @typedef {Function} TListener
+* @typedef {()=>void} Unsubscriber 
 */
-
-/** @typedef {()=>void} Unsubscriber */
 
 /** 
  * 
  * @class 
  * */
 class EventEmitter {
-    /**
-     * Creates an instance of EventEmitter.
-     *
-     * @constructor
-     */
-    constructor() {
-
-        /**
-         * @type {Object.<string, TListener[]>}
-         */
-        this.events = {};
-    }
+    /** @type {Object.<string, TListener[]>} */
+    events = {};
 
     /**
-     *
-     * @method
      * @param {string} event
      * @param {TListener} listener
      * @returns {Unsubscriber}
@@ -50,7 +35,6 @@ class EventEmitter {
         return unsubscriber;
     }
     /**
-     *
      * @param {string} event
      * @param {TListener} listener
      */
@@ -67,7 +51,6 @@ class EventEmitter {
 
     }
     /**
-     *
      * @param {string} event
      */
     emit(event) {
@@ -92,8 +75,6 @@ class EventEmitter {
     }
 
     /**
-     *
-     * @method 
      * @param {string} event
      * @param {TListener} listener
      * @returns {Unsubscriber}

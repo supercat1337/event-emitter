@@ -4,7 +4,7 @@
   "description": "Event Emitter",
   "main": "index.js",
   "scripts": {
-    "test": "ava",
+    "test": "c8 ava",
     "build": "npm run build_esm && npm run build_min_esm",
     "build_esm": "esbuild src/EventEmitter.js --outfile=dist/event-emitter.esm.js",
     "build_min_esm": "esbuild src/EventEmitter.js --minify --outfile=dist/event-emitter.min.esm.js"
@@ -13,11 +13,15 @@
   "license": "MIT",
   "devDependencies": {
     "ava": "^6.1.2",
+    "c8": "^9.1.0",
     "esbuild": "^0.20.2"
   },
   "type": "module",
   "moduleResolution": "Node",
-  "keywords": ["event emitter", "event bus"],
+  "keywords": [
+    "event emitter",
+    "event bus"
+  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },

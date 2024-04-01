@@ -1,15 +1,7 @@
 class EventEmitter {
+  /** @type {Object.<string, TListener[]>} */
+  events = {};
   /**
-   * Creates an instance of EventEmitter.
-   *
-   * @constructor
-   */
-  constructor() {
-    this.events = {};
-  }
-  /**
-   *
-   * @method
    * @param {string} event
    * @param {TListener} listener
    * @returns {Unsubscriber}
@@ -26,7 +18,6 @@ class EventEmitter {
     return unsubscriber;
   }
   /**
-   *
    * @param {string} event
    * @param {TListener} listener
    */
@@ -40,7 +31,6 @@ class EventEmitter {
     }
   }
   /**
-   *
    * @param {string} event
    */
   emit(event) {
@@ -59,8 +49,6 @@ class EventEmitter {
     }
   }
   /**
-   *
-   * @method 
    * @param {string} event
    * @param {TListener} listener
    * @returns {Unsubscriber}

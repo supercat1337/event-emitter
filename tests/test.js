@@ -5,7 +5,6 @@ import { EventEmitter } from "./../index.js";
 import test from "./../node_modules/ava/entrypoints/main.mjs";
 
 
-
 test("on(), emit()", t => {
     var ev = new EventEmitter;
     ev.on("foo", () => {
@@ -61,7 +60,7 @@ test("Call unsubscriber", t => {
     var action = () => {
         foo++;
     };
-    
+
     var unsubscriber = ev.on("foo", action);
 
 
@@ -75,4 +74,37 @@ test("Call unsubscriber", t => {
     } else {
         t.fail()
     }
+});
+
+
+test("on(), emit() with error", t => {
+    var ev = new EventEmitter;
+    var foo = 0;
+
+    /**
+     * 
+     * @param {number} bar 
+     */
+    function func(bar) {
+        if (bar % 2) {
+            throw new Error("Custom error")
+        } else {
+            foo++;
+        }
+    }
+
+    ev.on("foo", () => {
+        func(foo);
+    });
+
+    ev.emit("foo");
+    ev.emit("foo");
+    ev.emit("foo");
+
+    if (foo == 1) {
+        t.pass();
+    } else {
+        t.fail()
+    }
+
 });
