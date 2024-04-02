@@ -1,11 +1,13 @@
+// version 1.0.3
+
 // src/EventEmitter.js
 var EventEmitter = class {
-  /** @type {Object.<string, TListener[]>} */
+  /** @type {Object.<string, Function[]>} */
   events = {};
   /**
    * @param {string} event
-   * @param {TListener} listener
-   * @returns {Unsubscriber}
+   * @param {Function} listener
+   * @returns {()=>void}
    */
   on(event, listener) {
     if (typeof this.events[event] !== "object") {
@@ -20,7 +22,7 @@ var EventEmitter = class {
   }
   /**
    * @param {string} event
-   * @param {TListener} listener
+   * @param {Function} listener
    */
   removeListener(event, listener) {
     var idx;
@@ -51,8 +53,8 @@ var EventEmitter = class {
   }
   /**
    * @param {string} event
-   * @param {TListener} listener
-   * @returns {Unsubscriber}
+   * @param {Function} listener
+   * @returns {()=>void}
    */
   once(event, listener) {
     return this.on(event, function g() {

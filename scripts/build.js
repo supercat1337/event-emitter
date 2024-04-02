@@ -1,9 +1,6 @@
 // @ts-check
 
-//import * as esbuild from "@/esbuild/lib/main.js";
-
-// @ts-ignore
-import * as esbuild from 'esbuild';
+import * as esbuild from "./../node_modules/esbuild/lib/main.js";
 
 import fs from 'fs';
 
@@ -69,7 +66,7 @@ async function main() {
         minify: false,
         outfile: filename_1,
         platform: `neutral`,
-
+        banner: { "js": `// version ${packageInfo.version}` }
     });
 
     var filesize_1 = fs.statSync(filename_1).size;
@@ -81,7 +78,8 @@ async function main() {
         bundle: true,
         minify: true,
         outfile: filename_2,
-        platform: `neutral`
+        platform: `neutral`,
+        banner: { "js": `// version ${packageInfo.version}` }
     });
 
 

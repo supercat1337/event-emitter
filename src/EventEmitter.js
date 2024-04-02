@@ -1,22 +1,13 @@
 // @ts-check
 
-/**
-* @typedef {Function} TListener
-* @typedef {()=>void} Unsubscriber 
-*/
-
-/** 
- * 
- * @class 
- * */
 class EventEmitter {
-    /** @type {Object.<string, TListener[]>} */
+    /** @type {Object.<string, Function[]>} */
     events = {};
 
     /**
      * @param {string} event
-     * @param {TListener} listener
-     * @returns {Unsubscriber}
+     * @param {Function} listener
+     * @returns {()=>void}
      */
     on(event, listener) {
 
@@ -36,7 +27,7 @@ class EventEmitter {
     }
     /**
      * @param {string} event
-     * @param {TListener} listener
+     * @param {Function} listener
      */
     removeListener(event, listener) {
         var idx;
@@ -76,8 +67,8 @@ class EventEmitter {
 
     /**
      * @param {string} event
-     * @param {TListener} listener
-     * @returns {Unsubscriber}
+     * @param {Function} listener
+     * @returns {()=>void}
      */
     once(event, listener) {
         return this.on(event, function g() {
