@@ -1,10 +1,11 @@
-// version 1.0.3
+// version 1.0.5
 
 // src/EventEmitter.js
 var EventEmitter = class {
   /** @type {Object.<string, Function[]>} */
   events = {};
   /**
+   * on is used to add a callback function that's going to be executed when the event is triggered
    * @param {string} event
    * @param {Function} listener
    * @returns {()=>void}
@@ -21,6 +22,7 @@ var EventEmitter = class {
     return unsubscriber;
   }
   /**
+   * Remove an event listener from an event
    * @param {string} event
    * @param {Function} listener
    */
@@ -34,6 +36,7 @@ var EventEmitter = class {
     }
   }
   /**
+   * emit is used to trigger an event
    * @param {string} event
    */
   emit(event) {
@@ -52,6 +55,7 @@ var EventEmitter = class {
     }
   }
   /**
+   * Add a one-time listener
    * @param {string} event
    * @param {Function} listener
    * @returns {()=>void}
