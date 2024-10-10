@@ -2,6 +2,9 @@
 
 ## Environment agnostic event emitter
 
+This package allows you to create an event emitter that can be used in any environment.
+You can define types for the events that you want to emit and listen to.
+
 Installation
 ```
 $ npm install @supercat1337/event-emitter
@@ -11,21 +14,26 @@ Usage
 
 Basic example
 ```js
-import { EventEmitter } from "@supercat1337/event-emitter/src/EventEmitter.js";
+import { EventEmitter } from "@supercat1337/event-emitter";
 
+// Create an event emitter with a custom event type
+/** @type {EventEmitter<"foo">} */
 var ev = new EventEmitter();
+
 ev.on("foo", () => {
     console.log("Hello!");
 });
 
-ev.emit("bar");
+// IDE will complain if we emit an event that doesn't exist
+ev.emit("bar"); // $ExpectError
 ev.emit("foo");
 ```
 
 Example of unsubscribing from an event
 ```js
-import { EventEmitter } from "@supercat1337/event-emitter/src/EventEmitter.js";
+import { EventEmitter } from "@supercat1337/event-emitter";
 
+/** @type {EventEmitter<"foo">} */
 var ev = new EventEmitter;
 var foo = 0
 var action = () => {
@@ -48,10 +56,13 @@ if (foo == 1) {
 
 Example of using the Once method
 ```js
-import { EventEmitter } from "@supercat1337/event-emitter/src/EventEmitter.js";
+import { EventEmitter } from "@supercat1337/event-emitter";
 
+/** @type {EventEmitter<"foo">} */
 var ev = new EventEmitter;
+
 var foo = 0
+
 ev.once("foo", () => {
     foo++;
 });

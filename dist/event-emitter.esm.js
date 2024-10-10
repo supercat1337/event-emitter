@@ -1,13 +1,16 @@
 // @ts-check
 /** @module EventEmitter */
 
+/**
+ * @template {string} T
+ */
 class EventEmitter {
     /** @type {Object.<string, Function[]>} */
     events = {};
 
     /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @param {string} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */
@@ -29,7 +32,7 @@ class EventEmitter {
     }
     /**
      * Remove an event listener from an event
-     * @param {string} event
+     * @param {T} event
      * @param {Function} listener
      */
     removeListener(event, listener) {
@@ -46,7 +49,7 @@ class EventEmitter {
     }
     /**
      * emit is used to trigger an event
-     * @param {string} event
+     * @param {T} event
      */
     emit(event) {
         if (typeof this.events[event] !== 'object') return;
@@ -71,7 +74,7 @@ class EventEmitter {
 
     /**
      * Add a one-time listener
-     * @param {string} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */

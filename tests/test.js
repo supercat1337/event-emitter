@@ -6,6 +6,7 @@ import test from "./../node_modules/ava/entrypoints/main.mjs";
 
 
 test("on(), emit()", t => {
+    /** @type {EventEmitter<"foo"|"bar">} */
     var ev = new EventEmitter;
     ev.on("foo", () => {
         t.pass();
@@ -17,6 +18,7 @@ test("on(), emit()", t => {
 });
 
 test("once(), emit()", t => {
+    /** @type {EventEmitter<"foo">} */
     var ev = new EventEmitter;
     var foo = 0
     ev.once("foo", () => {

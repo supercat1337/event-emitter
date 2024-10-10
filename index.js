@@ -1,2 +1,2 @@
 // @ts-check
-export { EventEmitter } from "./src/EventEmitter.js";
+export { EventEmitter } from "./dist/event-emitter.esm.js";
