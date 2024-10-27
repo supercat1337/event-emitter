@@ -32,5 +32,19 @@ export class EventEmitter<T extends string> {
      * @returns {()=>void}
      */
     once(event: T, listener: Function): () => void;
+    /**
+     * Wait for an event to be emitted
+     * @param {T} event
+     * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, the function will wait indefinitely.
+     * @returns {Promise<boolean>} - Resolves with true if the event was emitted, false if the time ran out.
+     */
+    waitForEvent(event: T, max_wait_ms?: number): Promise<boolean>;
+    /**
+     * Wait for any of the specified events to be emitted
+     * @param {T[]} events - Array of event names to wait for
+     * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, the function will wait indefinitely.
+     * @returns {Promise<boolean>} - Resolves with true if any event was emitted, false if the time ran out.
+     */
+    waitForAnyEvent(events: T[], max_wait_ms?: number): Promise<boolean>;
 }
 //# sourceMappingURL=event-emitter.esm.d.ts.map

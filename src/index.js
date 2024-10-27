@@ -84,6 +84,81 @@ class EventEmitter {
             listener.apply(this, arguments);
         });
     }
+
+
+    /**
+     * Wait for an event to be emitted
+     * @param {T} event
+     * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, the function will wait indefinitely.
+     * @returns {Promise<boolean>} - Resolves with true if the event was emitted, false if the time ran out.
+     */
+    waitForEvent(event, max_wait_ms = 0) {
+
+        return new Promise((resolve) => {
+            let timeout;
+
+            let unsubscriber = this.on(event, () => {
+
+                if (max_wait_ms > 0) {
+                    clearTimeout(timeout);
+                }
+
+                unsubscriber();
+                resolve(true);
+            });
+
+            if (max_wait_ms > 0) {
+                timeout = setTimeout(() => {
+                    unsubscriber();
+                    resolve(false);
+                }, max_wait_ms);
+
+            }
+
+        });
+    }
+
+
+    /**
+     * Wait for any of the specified events to be emitted
+     * @param {T[]} events - Array of event names to wait for
+     * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, the function will wait indefinitely.
+     * @returns {Promise<boolean>} - Resolves with true if any event was emitted, false if the time ran out.
+     */
+    waitForAnyEvent(events, max_wait_ms = 0) {
+
+        return new Promise((resolve) => {
+            let timeout;
+
+            /** @type {Function[]} */
+            let unsubscribers = [];
+
+            const main_unsubscriber = () => {
+                if (max_wait_ms > 0) {
+                    clearTimeout(timeout);
+                }
+
+                unsubscribers.forEach((unsubscriber) => {
+                    unsubscriber();
+                });
+
+                resolve(true);
+            };
+
+            events.forEach((event) => {
+                unsubscribers.push(this.on(event, main_unsubscriber));
+            });
+
+            if (max_wait_ms > 0) {
+                timeout = setTimeout(() => {
+                    main_unsubscriber();
+                    resolve(false);
+                }, max_wait_ms);
+
+            }
+
+        });
+    }
 }
 
 export { EventEmitter };
