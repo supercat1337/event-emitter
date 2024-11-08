@@ -17,6 +17,10 @@ $ npm install @supercat1337/event-emitter
  - removeListener(event, listener) - Remove an event listener.
  - waitForEvent(event, max_wait_ms = 0) - Wait for an event to be emitted. If max_wait_ms is set to 0, the function will wait indefinitely.
  - waitForAnyEvent(events, max_wait_ms = 0) - Wait for any of the specified events to be emitted. If max_wait_ms is set to 0, the function will wait indefinitely.
+ - clear() - Remove all event listeners
+ - clearEventListeners(event) - Remove all listeners for a specified event
+ - onHasEventListeners(callback) - Subscribe to the "#has-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 0 to 1.
+ - onNoEventListeners(callback) - Subscribe to the "#no-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 1 to 0.
 
 ### Usage
 

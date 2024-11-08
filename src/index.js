@@ -10,7 +10,7 @@ class EventEmitter {
 
     /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @param {T} event
+     * @param {T|"#has-listeners"|"#no-listeners"} event
      * @param {Function} listener
      * @returns {()=>void}
      */
@@ -28,11 +28,15 @@ class EventEmitter {
             that.removeListener(event, listener);
         };
 
+        if (this.events[event].length == 1) { 
+            this.emit("#has-listeners", event, listener);
+        }
+
         return unsubscriber;
     }
     /**
      * Remove an event listener from an event
-     * @param {T} event
+     * @param {T|"#has-listeners"|"#no-listeners"} event
      * @param {Function} listener
      */
     removeListener(event, listener) {
@@ -43,13 +47,17 @@ class EventEmitter {
 
             if (idx > -1) {
                 this.events[event].splice(idx, 1);
+
+                if (this.events[event].length == 0) {
+                    this.emit("#no-listeners", event, listener);
+                }
             }
         }
 
     }
     /**
      * emit is used to trigger an event
-     * @param {T} event
+     * @param {T|"#has-listeners"|"#no-listeners"} event
      */
     emit(event) {
         if (typeof this.events[event] !== 'object') return;
@@ -74,7 +82,7 @@ class EventEmitter {
 
     /**
      * Add a one-time listener
-     * @param {T} event
+     * @param {T|"#has-listeners"|"#no-listeners"} event
      * @param {Function} listener
      * @returns {()=>void}
      */
@@ -158,6 +166,39 @@ class EventEmitter {
             }
 
         });
+    }
+
+    /**
+     * Clear all events
+     */
+    clear() {
+        this.events = {};
+    }
+
+    /**
+     * Clears all listeners for a specified event.
+     * @param {T|"#has-listeners"|"#no-listeners"} event - The event for which to clear all listeners.
+     */
+    clearEventListeners(event) {
+        this.events[event] = [];
+    }
+
+    /**
+     * onHasEventListeners() is used to subscribe to the "#has-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 0 to 1.
+     * @param {Function} callback
+     * @returns {()=>void}
+     */
+    onHasEventListeners(callback) {
+        return this.on("#has-listeners", callback);
+    }
+
+    /**
+     * onNoEventListeners() is used to subscribe to the "#no-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 1 to 0.
+     * @param {Function} callback
+     * @returns {()=>void}
+     */
+    onNoEventListeners(callback) {
+        return this.on("#no-listeners", callback);
     }
 }
 
