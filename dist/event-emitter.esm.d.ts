@@ -51,6 +51,11 @@ export class EventEmitter<T extends string> {
      */
     clear(): void;
     /**
+     * Destroys the event emitter, clearing all events and listeners.
+     * @alias clear
+     */
+    destroy(): void;
+    /**
      * Clears all listeners for a specified event.
      * @param {T|"#has-listeners"|"#no-listeners"} event - The event for which to clear all listeners.
      */

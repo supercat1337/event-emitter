@@ -28,8 +28,8 @@ class EventEmitter {
             that.removeListener(event, listener);
         };
 
-        if (this.events[event].length == 1) { 
-            this.emit("#has-listeners", event, listener);
+        if (!/^(#has-listeners|#no-listeners)$/.test(event) && this.events[event].length == 1) { 
+            this.emit("#has-listeners", event);
         }
 
         return unsubscriber;
@@ -48,8 +48,8 @@ class EventEmitter {
             if (idx > -1) {
                 this.events[event].splice(idx, 1);
 
-                if (this.events[event].length == 0) {
-                    this.emit("#no-listeners", event, listener);
+                if (!/^(#has-listeners|#no-listeners)$/.test(event) && this.events[event].length == 0) {
+                    this.emit("#no-listeners", event);
                 }
             }
         }
@@ -176,11 +176,25 @@ class EventEmitter {
     }
 
     /**
+     * Destroys the event emitter, clearing all events and listeners.
+     * @alias clear
+     */
+    destroy() {
+        this.clear();
+    }
+
+    /**
      * Clears all listeners for a specified event.
      * @param {T|"#has-listeners"|"#no-listeners"} event - The event for which to clear all listeners.
      */
     clearEventListeners(event) {
-        this.events[event] = [];
+        let listeners = this.events[event] || [];
+        let listenersCount = listeners.length;
+
+        if (listenersCount > 0) {
+            this.events[event] = [];
+            this.emit("#no-listeners", event);
+        }
     }
 
     /**

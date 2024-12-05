@@ -7,7 +7,7 @@ import test from "./../node_modules/ava/entrypoints/main.mjs";
 
 test("on(), emit()", t => {
     /** @type {EventEmitter<"foo"|"bar">} */
-    var ev = new EventEmitter;
+    let ev = new EventEmitter;
     ev.on("foo", () => {
         t.pass();
     });
@@ -19,8 +19,8 @@ test("on(), emit()", t => {
 
 test("once(), emit()", t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
+    let ev = new EventEmitter;
+    let foo = 0
     ev.once("foo", () => {
         foo++;
     });
@@ -38,9 +38,9 @@ test("once(), emit()", t => {
 
 test("removeListener()", t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
-    var action = () => {
+    let ev = new EventEmitter;
+    let foo = 0
+    let action = () => {
         foo++;
     };
 
@@ -59,13 +59,13 @@ test("removeListener()", t => {
 
 test("Call unsubscriber", t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
-    var action = () => {
+    let ev = new EventEmitter;
+    let foo = 0
+    let action = () => {
         foo++;
     };
 
-    var unsubscriber = ev.on("foo", action);
+    let unsubscriber = ev.on("foo", action);
 
 
     ev.emit("foo");
@@ -83,8 +83,8 @@ test("Call unsubscriber", t => {
 
 test("on(), emit() with error", t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0;
+    let ev = new EventEmitter;
+    let foo = 0;
 
     /**
      * 
@@ -116,9 +116,9 @@ test("on(), emit() with error", t => {
 
 test("waitForEvent()", async t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
-    var action = () => {
+    let ev = new EventEmitter;
+    let foo = 0
+    let action = () => {
         foo++;
     };
 
@@ -138,9 +138,9 @@ test("waitForEvent()", async t => {
 
 test("waitForEvent() with timeout  and no event", async t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
-    var action = () => {
+    let ev = new EventEmitter;
+    let foo = 0
+    let action = () => {
         foo++;
     };
 
@@ -161,9 +161,9 @@ test("waitForEvent() with timeout  and no event", async t => {
 
 test("waitForEvent() with timeout", async t => {
     /** @type {EventEmitter<"foo">} */
-    var ev = new EventEmitter;
-    var foo = 0
-    var action = () => {
+    let ev = new EventEmitter;
+    let foo = 0
+    let action = () => {
         foo++;
     };
 
@@ -184,9 +184,9 @@ test("waitForEvent() with timeout", async t => {
 
 test("waitForAnyEvent()", async t => {
     /** @type {EventEmitter<"foo"|"bar">} */
-    var ev = new EventEmitter;
-    var foo = 0;
-    var bar = 0;
+    let ev = new EventEmitter;
+    let foo = 0;
+    let bar = 0;
 
     ev.on("foo", () => {
         foo++;
@@ -218,9 +218,9 @@ test("waitForAnyEvent()", async t => {
 
 test("waitForAnyEvent() with timeout and no event", async t => {
     /** @type {EventEmitter<"foo"|"bar">} */
-    var ev = new EventEmitter;
-    var foo = 0;
-    var bar = 0;
+    let ev = new EventEmitter;
+    let foo = 0;
+    let bar = 0;
 
     ev.on("foo", () => {
         foo++;
@@ -249,9 +249,9 @@ test("waitForAnyEvent() with timeout and no event", async t => {
 
 test("waitForAnyEvent() with timeout", async t => {
     /** @type {EventEmitter<"foo"|"bar">} */
-    var ev = new EventEmitter;
-    var foo = 0;
-    var bar = 0;
+    let ev = new EventEmitter;
+    let foo = 0;
+    let bar = 0;
 
     ev.on("foo", () => {
         foo++;
@@ -273,3 +273,56 @@ test("waitForAnyEvent() with timeout", async t => {
         t.fail()
     }
 });
+
+test("clearEventListeners()", t => {
+    /** @type {EventEmitter<"foo"|"bar">} */
+    let ev = new EventEmitter;
+    let foo = 0;
+
+    ev.on("foo", () => {
+        foo++;
+    });
+
+    ev.emit("foo");
+
+    ev.clearEventListeners("foo");
+    ev.clearEventListeners("bar");
+
+    ev.emit("foo");
+    ev.emit("foo");
+    ev.emit("foo");
+
+    t.is(foo, 1);
+}
+);
+
+test("destroy()", t => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter;
+    let foo = 0;
+
+    ev.on("foo", () => {
+        foo++;
+    });
+
+    ev.onHasEventListeners(() => {
+        foo++;
+    });
+
+    ev.onNoEventListeners(() => {
+        foo++;
+    });
+
+    ev.destroy();
+
+    ev.on("foo", () => {
+
+    });
+
+    ev.emit("foo");
+    ev.emit("foo");
+    ev.emit("foo");
+
+    t.is(foo, 0);
+});
+
