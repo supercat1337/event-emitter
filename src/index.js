@@ -8,15 +8,31 @@ class EventEmitter {
     /** @type {Object.<string, Function[]>} */
     events = {};
 
+    #internalEvents = { "#has-listeners": [], "#no-listeners": [] };
+
+    #isDestroyed = false;
+
+    /**
+     * Is the event emitter destroyed?
+     * @type {boolean}
+     * @readonly
+     */
+    get isDestroyed() {
+        return this.#isDestroyed;
+    }
+
     /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */
     on(event, listener) {
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
 
-        if (typeof this.events[event] !== 'object') {
+        if (typeof this.events[event] !== "object") {
             this.events[event] = [];
         }
 
@@ -28,61 +44,141 @@ class EventEmitter {
             that.removeListener(event, listener);
         };
 
-        if (!/^(#has-listeners|#no-listeners)$/.test(event) && this.events[event].length == 1) { 
-            this.emit("#has-listeners", event);
+        if (this.events[event].length == 1) {
+            this.#emitInternal("#has-listeners", event);
         }
 
         return unsubscriber;
     }
+
+    /**
+     * Internal method to add a listener to an internal event
+     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {Function} listener
+     * @returns {()=>void}
+     */
+    #onInternalEvent(event, listener) {
+        if (typeof this.#internalEvents[event] !== "object") {
+            return;
+        }
+        this.#internalEvents[event].push(listener);
+
+        let that = this;
+
+        let unsubscriber = function () {
+            that.#removeInternalListener(event, listener);
+        };
+        return unsubscriber;
+    }
+
+    /**
+     * Internal method to remove a listener from an internal event
+     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {Function} listener
+     */
+    #removeInternalListener(event, listener) {
+        var idx;
+
+        if (typeof this.#internalEvents[event] === "object") {
+            idx = this.#internalEvents[event].indexOf(listener);
+
+            if (idx > -1) {
+                this.#internalEvents[event].splice(idx, 1);
+            }
+        }
+    }
+
+    /**
+     * off is an alias for removeListener
+     * @param {T} event
+     * @param {Function} listener
+     */
+    off(event, listener) {
+        return this.removeListener(event, listener);
+    }
+
     /**
      * Remove an event listener from an event
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      */
     removeListener(event, listener) {
+        if (this.#isDestroyed) {
+            return;
+        }
         var idx;
 
-        if (typeof this.events[event] === 'object') {
-            idx = this.events[event].indexOf(listener);
+        if (!this.events[event]) return;
+        idx = this.events[event].indexOf(listener);
 
-            if (idx > -1) {
-                this.events[event].splice(idx, 1);
+        if (idx > -1) {
+            this.events[event].splice(idx, 1);
 
-                if (!/^(#has-listeners|#no-listeners)$/.test(event) && this.events[event].length == 0) {
-                    this.emit("#no-listeners", event);
-                }
+            if (this.events[event].length == 0) {
+                this.#emitInternal("#no-listeners", event);
             }
         }
-
     }
+
     /**
      * emit is used to trigger an event
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      */
     emit(event) {
-        if (typeof this.events[event] !== 'object') return;
+        if (this.#isDestroyed) {
+            return;
+        }
 
-        var i, listeners, length, args = [].slice.call(arguments, 1);
+        if (typeof this.events[event] !== "object") return;
+
+        var i,
+            listeners,
+            length,
+            args = [].slice.call(arguments, 1);
 
         listeners = this.events[event].slice();
         length = listeners.length;
 
         for (i = 0; i < length; i++) {
-
             try {
                 listeners[i].apply(this, args);
-            }
-            catch (e) {
+            } catch (e) {
                 console.error(event, args);
                 console.error(e);
             }
+        }
+    }
 
+    /**
+     * Internal function to emit an event
+     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {...any} args
+     */
+    #emitInternal(event, ...args) {
+        if (this.#isDestroyed) {
+            return;
+        }
+
+        if (typeof this.#internalEvents[event] !== "object") return;
+
+        var i, listeners, length;
+
+        listeners = this.#internalEvents[event].slice();
+        length = listeners.length;
+
+        for (i = 0; i < length; i++) {
+            try {
+                listeners[i].apply(this, args);
+            } catch (e) {
+                console.error(event, args);
+                console.error(e);
+            }
         }
     }
 
     /**
      * Add a one-time listener
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */
@@ -93,7 +189,6 @@ class EventEmitter {
         });
     }
 
-
     /**
      * Wait for an event to be emitted
      * @param {T} event
@@ -101,12 +196,14 @@ class EventEmitter {
      * @returns {Promise<boolean>} - Resolves with true if the event was emitted, false if the time ran out.
      */
     waitForEvent(event, max_wait_ms = 0) {
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
 
         return new Promise((resolve) => {
             let timeout;
 
             let unsubscriber = this.on(event, () => {
-
                 if (max_wait_ms > 0) {
                     clearTimeout(timeout);
                 }
@@ -120,12 +217,9 @@ class EventEmitter {
                     unsubscriber();
                     resolve(false);
                 }, max_wait_ms);
-
             }
-
         });
     }
-
 
     /**
      * Wait for any of the specified events to be emitted
@@ -134,6 +228,9 @@ class EventEmitter {
      * @returns {Promise<boolean>} - Resolves with true if any event was emitted, false if the time ran out.
      */
     waitForAnyEvent(events, max_wait_ms = 0) {
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
 
         return new Promise((resolve) => {
             let timeout;
@@ -162,9 +259,7 @@ class EventEmitter {
                     main_unsubscriber();
                     resolve(false);
                 }, max_wait_ms);
-
             }
-
         });
     }
 
@@ -180,12 +275,18 @@ class EventEmitter {
      * @alias clear
      */
     destroy() {
-        this.clear();
+        if (this.#isDestroyed) {
+            return;
+        }
+
+        this.#isDestroyed = true;
+        this.#internalEvents = { "#has-listeners": [], "#no-listeners": [] };
+        this.events = {};
     }
 
     /**
      * Clears all listeners for a specified event.
-     * @param {T|"#has-listeners"|"#no-listeners"} event - The event for which to clear all listeners.
+     * @param {T} event - The event for which to clear all listeners.
      */
     clearEventListeners(event) {
         let listeners = this.events[event] || [];
@@ -193,7 +294,7 @@ class EventEmitter {
 
         if (listenersCount > 0) {
             this.events[event] = [];
-            this.emit("#no-listeners", event);
+            this.#emitInternal("#no-listeners", event);
         }
     }
 
@@ -203,7 +304,10 @@ class EventEmitter {
      * @returns {()=>void}
      */
     onHasEventListeners(callback) {
-        return this.on("#has-listeners", callback);
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
+        return this.#onInternalEvent("#has-listeners", callback);
     }
 
     /**
@@ -212,7 +316,10 @@ class EventEmitter {
      * @returns {()=>void}
      */
     onNoEventListeners(callback) {
-        return this.on("#no-listeners", callback);
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
+        return this.#onInternalEvent("#no-listeners", callback);
     }
 }
 
