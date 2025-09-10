@@ -8,6 +8,7 @@ class EventEmitter {
     /** @type {Object.<string, Function[]>} */
     events = {};
 
+    /** @type {Object.<"#has-listeners"|"#no-listeners", Function[]>} */
     #internalEvents = { "#has-listeners": [], "#no-listeners": [] };
 
     #isDestroyed = false;
@@ -15,7 +16,6 @@ class EventEmitter {
     /**
      * Is the event emitter destroyed?
      * @type {boolean}
-     * @readonly
      */
     get isDestroyed() {
         return this.#isDestroyed;
