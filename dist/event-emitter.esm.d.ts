@@ -3,35 +3,54 @@
  * @template {string} T
  */
 export class EventEmitter<T extends string> {
-    /** @type {Object.<string, Function[]>} */
+    /**
+     * Object that holds events and their listeners
+     * @type {Object.<string, Function[]>}
+     */
     events: {
         [x: string]: Function[];
     };
     /**
+     * logErrors indicates whether errors thrown by listeners should be logged to the console.
+     * @type {boolean}
+     */
+    logErrors: boolean;
+    /**
+     * Is the event emitter destroyed?
+     * @type {boolean}
+     */
+    get isDestroyed(): boolean;
+    /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */
-    on(event: T | "#has-listeners" | "#no-listeners", listener: Function): () => void;
+    on(event: T, listener: Function): () => void;
+    /**
+     * off is an alias for removeListener
+     * @param {T} event
+     * @param {Function} listener
+     */
+    off(event: T, listener: Function): void;
     /**
      * Remove an event listener from an event
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      */
-    removeListener(event: T | "#has-listeners" | "#no-listeners", listener: Function): void;
+    removeListener(event: T, listener: Function): void;
     /**
      * emit is used to trigger an event
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      */
-    emit(event: T | "#has-listeners" | "#no-listeners", ...args: any[]): void;
+    emit(event: T, ...args: any[]): void;
     /**
      * Add a one-time listener
-     * @param {T|"#has-listeners"|"#no-listeners"} event
+     * @param {T} event
      * @param {Function} listener
      * @returns {()=>void}
      */
-    once(event: T | "#has-listeners" | "#no-listeners", listener: Function): () => void;
+    once(event: T, listener: Function): () => void;
     /**
      * Wait for an event to be emitted
      * @param {T} event
@@ -57,9 +76,9 @@ export class EventEmitter<T extends string> {
     destroy(): void;
     /**
      * Clears all listeners for a specified event.
-     * @param {T|"#has-listeners"|"#no-listeners"} event - The event for which to clear all listeners.
+     * @param {T} event - The event for which to clear all listeners.
      */
-    clearEventListeners(event: T | "#has-listeners" | "#no-listeners"): void;
+    clearEventListeners(event: T): void;
     /**
      * onHasEventListeners() is used to subscribe to the "#has-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 0 to 1.
      * @param {Function} callback
@@ -72,5 +91,12 @@ export class EventEmitter<T extends string> {
      * @returns {()=>void}
      */
     onNoEventListeners(callback: Function): () => void;
+    /**
+     * onListenerError() is used to subscribe to the "#listener-error" event. This event is emitted when any listener throws an error.
+     * @param {Function} callback
+     * @returns {()=>void}
+     */
+    onListenerError(callback: Function): () => void;
+    #private;
 }
 //# sourceMappingURL=event-emitter.esm.d.ts.map
