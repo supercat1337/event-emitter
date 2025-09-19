@@ -163,7 +163,7 @@ emitter.onNoEventListeners((eventName) => {
 Get notified when any listener throws an error.
 
 ```javascript
-emitter.onListenerError((eventName, error) => {
+emitter.onListenerError((error, eventName, ...args) => {
     console.error(`Listener for event ${eventName} threw an error:`, error);
 });
 ```
