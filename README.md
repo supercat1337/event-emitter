@@ -42,6 +42,34 @@ unsubscribe();
 
 ## API Reference
 
+### Core Properties
+
+#### `isDestroyed`
+
+Is the event emitter destroyed?
+
+```javascript
+console.log(emitter.isDestroyed); // false
+emitter.destroy();
+console.log(emitter.isDestroyed); // true
+```
+
+#### `events`
+
+The list of events and their listeners.
+
+```javascript
+console.log(emitter.events); // { 'user:created': [Function] }
+```
+
+#### `logErrors`
+
+Should errors be logged to the console?
+
+```javascript
+emitter.logErrors = true;
+```
+
 ### Core Methods
 
 #### `on(event, listener)`
@@ -127,6 +155,16 @@ Get notified when any event loses its last listener.
 ```javascript
 emitter.onNoEventListeners((eventName) => {
     console.log(`Event ${eventName} has no more listeners!`);
+});
+```
+
+#### `onListenerError(callback)`
+
+Get notified when any listener throws an error.
+
+```javascript
+emitter.onListenerError((eventName, error) => {
+    console.error(`Listener for event ${eventName} threw an error:`, error);
 });
 ```
 
