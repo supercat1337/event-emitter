@@ -42,6 +42,7 @@ export class EventEmitter<T extends string> {
     /**
      * emit is used to trigger an event
      * @param {T} event
+     * @param {...any} args
      */
     emit(event: T, ...args: any[]): void;
     /**

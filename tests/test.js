@@ -34,7 +34,7 @@ test("once(), emit()", (t) => {
     }
 });
 
-test("removeListener()", (t) => {
+test("off(), removeListener()", (t) => {
     /** @type {EventEmitter<"foo">} */
     let ev = new EventEmitter();
     let foo = 0;
@@ -43,10 +43,20 @@ test("removeListener()", (t) => {
     };
 
     ev.on("foo", action);
-    ev.removeListener("foo", action);
+    ev.off("foo", action);
 
     ev.emit("foo");
     ev.emit("foo");
+
+    t.notThrows(() => {
+        // This should not throw
+        // @ts-ignore
+        ev.removeListener("foo1", action);
+    });
+    ev.destroy();
+    t.notThrows(() => {
+        ev.off("foo", action);
+    });
 
     if (foo == 0) {
         t.pass();
@@ -315,4 +325,184 @@ test("destroy()", (t) => {
     ev.emit("foo");
 
     t.is(foo, 0);
+});
+
+test("isDestroyed", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    t.is(ev.isDestroyed, false);
+    ev.destroy();
+    t.is(ev.isDestroyed, true);
+});
+
+test("onHasEventListeners(), onNoEventListeners()", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    let foo = 0;
+    let bar = 0;
+
+    // Test that onHasEventListeners() and onNoEventListeners() are called when appropriate
+    let unsubscriberOnHasEventListeners = ev.onHasEventListeners(() => {
+        // Increment when onHasEventListeners() is called
+        bar++;
+    });
+    let unsubscriberOnNoEventListeners = ev.onNoEventListeners(() => {
+        // Decrement when onNoEventListeners() is called
+        bar--;
+    });
+
+    t.is(bar, 0);
+    t.is(foo, 0);
+
+    // Subscribe to the event and emit it
+    let unsubscriber = ev.on("foo", () => {
+        foo++;
+    });
+    ev.emit("foo");
+    t.is(bar, 1);
+    t.is(foo, 1);
+
+    // Unsubscribe and emit the event again
+    unsubscriber();
+    t.is(bar, 0);
+    t.is(foo, 1);
+
+    // Subscribe again and emit the event again
+    let unsubscriber2 = ev.on("foo", () => {
+        foo++;
+    });
+    ev.emit("foo");
+    t.is(bar, 1);
+    t.is(foo, 2);
+
+    // Unsubscribe and emit the event again
+    unsubscriberOnNoEventListeners();
+    unsubscriber2();
+    t.is(bar, 1);
+    t.is(foo, 2);
+});
+
+test("onListenerError()", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    let foo = 0;
+    let errorCaught = false;
+
+    // Subscribe to the event and emit it
+    let unsubscriber = ev.on("foo", () => {
+        foo++;
+        throw new Error("test");
+    });
+    ev.onListenerError(() => {
+        errorCaught = true;
+    });
+    ev.emit("foo");
+    t.is(errorCaught, true);
+    t.is(foo, 1);
+});
+
+test("onListenerError() with error in onHasEventListeners(), onNoEventListeners() callbacks", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    let foo = 0;
+    let onHasEventListenersErrorCaught = false;
+    let onNoEventListenersErrorCaught = false;
+
+    ev.onHasEventListeners(() => {
+        throw new Error("onHasEventListeners");
+    });
+    ev.onNoEventListeners(() => {
+        throw new Error("onNoEventListenersErrorCaught");
+    });
+    ev.onListenerError((e) => {
+        if (e.message === "onHasEventListeners") {
+            onHasEventListenersErrorCaught = true;
+        }
+        if (e.message === "onNoEventListenersErrorCaught") {
+            onNoEventListenersErrorCaught = true;
+        }
+    });
+
+    ev.onListenerError(() => {
+        throw new Error("ListenerErrorInOnListenerError");
+    });
+
+    // Subscribe to the event and emit it
+    let unsubscriber = ev.on("foo", () => {
+        foo++;
+        throw new Error("test");
+    });
+    ev.emit("foo");
+    t.is(foo, 1);
+    t.is(onHasEventListenersErrorCaught, true);
+    t.is(onNoEventListenersErrorCaught, false);
+    unsubscriber();
+    t.is(onNoEventListenersErrorCaught, true);
+});
+
+test("when destroyed", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    ev.destroy();
+
+    t.notThrows(() => {
+        ev.emit("foo");
+    });
+
+    t.notThrows(() => {
+        ev.destroy();
+    });
+
+    t.notThrows(() => {
+        ev.removeListener("foo", () => {});
+    });
+
+    t.notThrows(() => {
+        ev.clearEventListeners("foo");
+    });
+
+    t.notThrows(() => {
+        ev.off("foo", () => {});
+    });
+
+    t.throws(() => {
+        ev.on("foo", () => {});
+    });
+
+    t.throws(() => {
+        ev.once("foo", () => {});
+    });
+
+    t.throws(() => {
+        ev.onHasEventListeners(() => {});
+    });
+
+    t.throws(() => {
+        ev.onNoEventListeners(() => {});
+    });
+
+    t.throws(() => {
+        ev.onListenerError(() => {});
+    });
+
+    t.throws(() => {
+        ev.waitForEvent("foo");
+    });
+
+    t.throws(() => {
+        ev.waitForAnyEvent(["foo"]);
+    });
+});
+
+test("clear", (t) => {
+    /** @type {EventEmitter<"foo">} */
+    let ev = new EventEmitter();
+    let foo = 0;
+    ev.on("foo", () => {
+        foo++;
+    });
+    ev.clear();
+    ev.emit("foo");
+    t.is(foo, 0);
+    t.deepEqual(ev.events, {});
 });

@@ -1,6 +1,6 @@
 {
     "name": "@supercat1337/event-emitter",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "Event Emitter",
     "main": "index.js",
     "scripts": {

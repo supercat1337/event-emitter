@@ -71,9 +71,6 @@ class EventEmitter {
      * @returns {()=>void}
      */
     #onInternalEvent(event, listener) {
-        if (typeof this.#internalEvents[event] !== "object") {
-            return;
-        }
         this.#internalEvents[event].push(listener);
 
         let that = this;
@@ -136,23 +133,19 @@ class EventEmitter {
     /**
      * emit is used to trigger an event
      * @param {T} event
+     * @param {...any} args
      */
-    emit(event) {
+    emit(event, ...args) {
         if (this.#isDestroyed) {
             return;
         }
 
         if (typeof this.events[event] !== "object") return;
 
-        var i,
-            listeners,
-            length,
-            args = [].slice.call(arguments, 1);
+        var listeners = this.events[event];
+        var length = listeners.length;
 
-        listeners = this.events[event].slice();
-        length = listeners.length;
-
-        for (i = 0; i < length; i++) {
+        for (var i = 0; i < length; i++) {
             try {
                 listeners[i].apply(this, args);
             } catch (e) {
@@ -170,26 +163,63 @@ class EventEmitter {
      * @param {...any} args
      */
     #emitInternal(event, ...args) {
-        if (this.#isDestroyed) {
-            return;
-        }
+        var listeners = this.#internalEvents[event];
+        var length = listeners.length;
 
-        if (typeof this.#internalEvents[event] !== "object") return;
-
-        var i, listeners, length;
-
-        listeners = this.#internalEvents[event].slice();
-        length = listeners.length;
-
-        for (i = 0; i < length; i++) {
+        for (var i = 0; i < length; i++) {
             try {
                 listeners[i].apply(this, args);
             } catch (e) {
-                this.#emitInternal("#listener-error", e, event, ...args);
-                if (this.logErrors) {
-                    console.error(
-                        `Error in listener for internal event "${event}":`,
-                        e
+                /** @type {Error} */
+                let listenerError = e;
+
+                // @ts-ignore
+                listenerError.cause = {
+                    event: event,
+                    args: args,
+                };
+
+                if (event === "#listener-error") {
+                    if (this.logErrors) {
+                        console.error(
+                            `Error in listener for internal event "${event}":`,
+                            listenerError
+                        );
+                    }
+
+                    // Prevent infinite loop
+                    continue;
+                }
+
+                if (event === "#has-listeners") {
+                    if (this.logErrors) {
+                        console.error(
+                            `Error in listener for internal event "${event}":`,
+                            listenerError
+                        );
+                    }
+
+                    this.#emitInternal(
+                        "#listener-error",
+                        listenerError,
+                        "#has-listeners",
+                        ...args
+                    );
+                }
+
+                if (event === "#no-listeners") {
+                    if (this.logErrors) {
+                        console.error(
+                            `Error in listener for internal event "${event}":`,
+                            listenerError
+                        );
+                    }
+
+                    this.#emitInternal(
+                        "#listener-error",
+                        listenerError,
+                        "#no-listeners",
+                        ...args
                     );
                 }
             }
@@ -313,6 +343,10 @@ class EventEmitter {
      * @param {T} event - The event for which to clear all listeners.
      */
     clearEventListeners(event) {
+        if (this.#isDestroyed) {
+            return;
+        }
+
         let listeners = this.events[event] || [];
         let listenersCount = listeners.length;
 
