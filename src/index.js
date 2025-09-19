@@ -5,13 +5,26 @@
  * @template {string} T
  */
 class EventEmitter {
-    /** @type {Object.<string, Function[]>} */
+    /**
+     * Object that holds events and their listeners
+     * @type {Object.<string, Function[]>}
+     */
     events = {};
 
-    /** @type {Object.<"#has-listeners"|"#no-listeners", Function[]>} */
-    #internalEvents = { "#has-listeners": [], "#no-listeners": [] };
+    /** @type {Object.<"#has-listeners"|"#no-listeners"|"#listener-error", Function[]>} */
+    #internalEvents = {
+        "#has-listeners": [],
+        "#no-listeners": [],
+        "#listener-error": [],
+    };
 
     #isDestroyed = false;
+
+    /**
+     * logErrors indicates whether errors thrown by listeners should be logged to the console.
+     * @type {boolean}
+     */
+    logErrors = true;
 
     /**
      * Is the event emitter destroyed?
@@ -53,7 +66,7 @@ class EventEmitter {
 
     /**
      * Internal method to add a listener to an internal event
-     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {"#has-listeners"|"#no-listeners"|"#listener-error"} event
      * @param {Function} listener
      * @returns {()=>void}
      */
@@ -73,7 +86,7 @@ class EventEmitter {
 
     /**
      * Internal method to remove a listener from an internal event
-     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {"#has-listeners"|"#no-listeners"|"#listener-error"} event
      * @param {Function} listener
      */
     #removeInternalListener(event, listener) {
@@ -143,15 +156,17 @@ class EventEmitter {
             try {
                 listeners[i].apply(this, args);
             } catch (e) {
-                console.error(event, args);
-                console.error(e);
+                this.#emitInternal("#listener-error", e, event, ...args);
+                if (this.logErrors) {
+                    console.error(`Error in listener for event "${event}":`, e);
+                }
             }
         }
     }
 
     /**
      * Internal function to emit an event
-     * @param {"#has-listeners"|"#no-listeners"} event
+     * @param {"#has-listeners"|"#no-listeners"|"#listener-error"} event
      * @param {...any} args
      */
     #emitInternal(event, ...args) {
@@ -170,8 +185,13 @@ class EventEmitter {
             try {
                 listeners[i].apply(this, args);
             } catch (e) {
-                console.error(event, args);
-                console.error(e);
+                this.#emitInternal("#listener-error", e, event, ...args);
+                if (this.logErrors) {
+                    console.error(
+                        `Error in listener for internal event "${event}":`,
+                        e
+                    );
+                }
             }
         }
     }
@@ -280,7 +300,11 @@ class EventEmitter {
         }
 
         this.#isDestroyed = true;
-        this.#internalEvents = { "#has-listeners": [], "#no-listeners": [] };
+        this.#internalEvents = {
+            "#has-listeners": [],
+            "#no-listeners": [],
+            "#listener-error": [],
+        };
         this.events = {};
     }
 
@@ -320,6 +344,18 @@ class EventEmitter {
             throw new Error("EventEmitter is destroyed");
         }
         return this.#onInternalEvent("#no-listeners", callback);
+    }
+
+    /**
+     * onListenerError() is used to subscribe to the "#listener-error" event. This event is emitted when any listener throws an error.
+     * @param {Function} callback
+     * @returns {()=>void}
+     */
+    onListenerError(callback) {
+        if (this.#isDestroyed) {
+            throw new Error("EventEmitter is destroyed");
+        }
+        return this.#onInternalEvent("#listener-error", callback);
     }
 }
 
