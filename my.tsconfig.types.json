@@ -7,7 +7,7 @@
         "declaration": true, 
         "outDir": "./",
         "rootDir": ".",
-        "declarationMap": true,
+        "declarationMap": false,
         "lib": ["ESNext", "DOM", "ES2023"],
         "moduleResolution": "NodeNext",
         "stripInternal": true

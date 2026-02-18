@@ -1,16 +1,21 @@
 # @supercat1337/event-emitter 🐈⚡
 
-A modern, feature-rich EventEmitter implementation for JavaScript and TypeScript with advanced capabilities and excellent type safety.
+A modern, feature-rich EventEmitter implementation for JavaScript and TypeScript with advanced capabilities and industry-leading type safety.
+
+---
 
 ## Features
 
--   ✅ **Full TypeScript support** with generics and complete type definitions
--   🎯 **Promise-based event waiting** with timeout support
--   📊 **Listener lifecycle tracking** - know when events gain/lose listeners
--   🛡️ **Memory safe** - automatic cleanup and unsubscribe functions
--   ⚡ **High performance** - optimized for frequent events
--   🔒 **Immutable patterns** - listener arrays are copied during emission
--   🚀 **Modern ES2022+** - private fields, arrow functions, and more
+- ✅ **Dual Implementation** – Choose between lightweight `EventEmitterLite` or full-featured `EventEmitter`.
+- ✅ **First-class TypeScript** – Deep generic support for event names and argument validation.
+- ✅ **Promise-based Waiting** – Native `waitForEvent` and `waitForAnyEvent` with built-in timeout support.
+- ✅ **Lifecycle Tracking** – Monitor when events gain or lose listeners (`onHasEventListeners`, `onNoEventListeners`).
+- ✅ **Centralized Error Handling** – Intercept and handle listener errors globally via `onListenerError`.
+- ✅ **Memory-Efficient** – Automatic cleanup of unused event keys and dedicated `destroy()` lifecycle.
+- ✅ **Immutable Emission** – Listener arrays are snapshotted during emission, making it safe to modify listeners inside callbacks.
+- ✅ **Modern ES2022+** – Leverages native private fields and optimized logic.
+
+---
 
 ## Installation
 
@@ -18,9 +23,13 @@ A modern, feature-rich EventEmitter implementation for JavaScript and TypeScript
 npm install @supercat1337/event-emitter
 ```
 
+---
+
 ## Quick Start
 
-```javascript
+### Using the full-featured `EventEmitter`
+
+```typescript
 import { EventEmitter } from '@supercat1337/event-emitter';
 
 // Define your event types
@@ -28,7 +37,7 @@ type AppEvents = 'user:created' | 'user:deleted' | 'notification:sent';
 
 const emitter = new EventEmitter<AppEvents>();
 
-// Subscribe to events
+// Subscribe with an auto-generated unsubscribe function
 const unsubscribe = emitter.on('user:created', (userData) => {
     console.log('User created:', userData);
 });
@@ -36,224 +45,167 @@ const unsubscribe = emitter.on('user:created', (userData) => {
 // Emit events
 emitter.emit('user:created', { id: 1, name: 'John' });
 
-// Unsubscribe when done
+// Clean up
 unsubscribe();
 ```
+
+### Using the lightweight `EventEmitterLite`
+
+For performance-critical paths where you only need core `on`/`off`/`emit` logic:
+
+```javascript
+import { EventEmitterLite } from '@supercat1337/event-emitter';
+
+const lite = new EventEmitterLite();
+lite.on('data', (msg) => console.log(msg));
+lite.emit('data', 'Hello, World!');
+```
+
+---
 
 ## API Reference
 
-### Core Properties
+### Core Classes
 
-#### `isDestroyed`
+#### `EventEmitterLite<Events>`
+The core implementation focused on performance. Use this when you don't need async waiting or lifecycle hooks.
 
-Is the event emitter destroyed?
+#### `EventEmitter<Events>`
+Extends `EventEmitterLite` with the full suite of advanced features: async promises, tracking hooks, and instance destruction.
+
+### Common Properties
+
+| Property      | Type      | Description                                                                                |
+|---------------|-----------|--------------------------------------------------------------------------------------------|
+| `logErrors`   | `boolean` | If `true`, errors in listeners are logged to the console. (Default: `true`)<br>Even when `false`, errors can still be caught via `onListenerError`. |
+| `isDestroyed` | `boolean` | (`EventEmitter` only) Returns `true` if the instance has been destroyed.                   |
+
+### Common Methods
+
+| Method                          | Description                                                                           |
+|---------------------------------|---------------------------------------------------------------------------------------|
+| `on(event, listener)`           | Subscribes to an event. Returns an `unsubscribe()` function.                          |
+| `once(event, listener)`         | Subscribes for a single invocation, then auto-removes.                                |
+| `off(event, listener)`          | Removes a specific listener. Alias for `removeListener`.                              |
+| `emit(event, ...args)`          | Triggers all listeners for the event with provided arguments.                         |
+| `removeListener(event, listener)` | Same as `off`.                                                                        |
+
+### Advanced Methods (`EventEmitter` only)
+
+| Method                                          | Description                                                                                                 |
+|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `waitForEvent(event, [maxWaitMs])`              | Returns a `Promise<boolean>`. Resolves `true` when the event fires. If `maxWaitMs` is reached, resolves `false`. |
+| `waitForAnyEvent(events, [maxWaitMs])`          | Waits for the first occurring event from an array of event names.                                           |
+| `clear()`                                        | Removes all listeners from all events.                                                                      |
+| `clearEventListeners(event)`                     | Removes all listeners for a specific event.                                                                 |
+| `destroy()`                                      | Completely wipes the instance. Clears all listeners and prevents further emissions.                          |
+| `onHasEventListeners(callback)`                  | Invoked when any event gains its **first** listener. Receives the event name.                               |
+| `onNoEventListeners(callback)`                   | Invoked when any event loses its **last** listener. Receives the event name.                                |
+| `onListenerError(callback)`                      | Invoked when any listener throws an error. Receives `(error, eventName, ...args)`.                          |
+
+#### Example: lifecycle tracking
 
 ```javascript
-console.log(emitter.isDestroyed); // false
-emitter.destroy();
-console.log(emitter.isDestroyed); // true
-```
-
-#### `events`
-
-The list of events and their listeners.
-
-```javascript
-console.log(emitter.events); // { 'user:created': [Function] }
-```
-
-#### `logErrors`
-
-Should errors be logged to the console?
-
-```javascript
-emitter.logErrors = true;
-```
-
-### Core Methods
-
-#### `on(event, listener)`
-
-Subscribe to an event. Returns an unsubscribe function.
-
-```javascript
-const unsubscribe = emitter.on("user:created", (data) => {
-    console.log(data);
+emitter.onHasEventListeners((event) => {
+    console.log(`First listener added for ${event}`);
 });
 
-// Later...
-unsubscribe();
-```
-
-#### `off(event, listener)`
-
-Remove a specific listener from an event.
-
-```javascript
-function listener(data) {
-    /* ... */
-}
-emitter.on("user:created", listener);
-emitter.off("user:created", listener);
-```
-
-#### `emit(event, ...args)`
-
-Emit an event with optional arguments.
-
-```javascript
-emitter.emit("user:created", { id: 1, name: "Alice" });
-```
-
-#### `once(event, listener)`
-
-Add a one-time listener that auto-removes after execution.
-
-```javascript
-emitter.once("app:ready", () => {
-    console.log("App is ready!");
+emitter.onNoEventListeners((event) => {
+    console.log(`Last listener removed for ${event}`);
 });
+
+emitter.on('foo', () => {}); // logs: First listener added for foo
+emitter.off('foo', () => {}); // logs: Last listener removed for foo
 ```
 
-### Advanced Methods
-
-#### `waitForEvent(event, [maxWaitMs])`
-
-Wait for an event using Promises.
+#### Example: error handling
 
 ```javascript
-// Wait indefinitely
-const result = await emitter.waitForEvent("data:loaded");
-
-// Wait with timeout (returns false if timeout reached)
-const success = await emitter.waitForEvent("data:loaded", 5000);
-```
-
-#### `waitForAnyEvent(events, [maxWaitMs])`
-
-Wait for any of multiple events.
-
-```javascript
-const events = ['success', 'error', 'timeout'] as const;
-const result = await emitter.waitForAnyEvent(events, 3000);
-```
-
-#### `onHasEventListeners(callback)`
-
-Get notified when any event gains its first listener.
-
-```javascript
-emitter.onHasEventListeners((eventName) => {
-    console.log(`Event ${eventName} now has listeners!`);
+emitter.onListenerError((error, event, ...args) => {
+    console.error(`Error in ${event}:`, error);
+    myLoggingService.report(error);
 });
+
+emitter.on('crash', () => { throw new Error('boom'); });
+emitter.emit('crash'); // error is caught, passed to the callback, and (if logErrors=true) also logged.
 ```
 
-#### `onNoEventListeners(callback)`
-
-Get notified when any event loses its last listener.
-
-```javascript
-emitter.onNoEventListeners((eventName) => {
-    console.log(`Event ${eventName} has no more listeners!`);
-});
-```
-
-#### `onListenerError(callback)`
-
-Get notified when any listener throws an error.
-
-```javascript
-emitter.onListenerError((error, eventName, ...args) => {
-    console.error(`Listener for event ${eventName} threw an error:`, error);
-});
-```
-
-### Lifecycle Management
-
-#### `destroy()`
-
-Completely destroy the emitter and clean up all resources.
-
-```javascript
-emitter.destroy();
-console.log(emitter.isDestroyed); // true
-```
-
-#### `clear()`
-
-Remove all listeners while keeping the emitter functional.
-
-```javascript
-emitter.clear();
-```
-
-#### `clearEventListeners(event)`
-
-Remove all listeners for a specific event.
-
-```javascript
-emitter.clearEventListeners("user:created");
-```
+---
 
 ## TypeScript Usage
 
-```typescript
-import { EventEmitter } from "@supercat1337/event-emitter";
+### 1. Simple string union
+Good for events that don't pass complex data.
 
-// Define your event types
-type MyEvents =
-    | "user:created"
-    | "user:updated"
-    | { type: "user:deleted"; payload: { id: string; reason: string } };
+```typescript
+type MyEvents = 'start' | 'stop' | 'tick';
+const emitter = new EventEmitter<MyEvents>();
+emitter.emit('start'); // OK
+emitter.emit('unknown'); // Type error
+```
+
+### 2. Full type safety (recommended)
+Define a record mapping event names to argument tuples. This gives you autocompletion and argument validation.
+
+```typescript
+type MyEvents = {
+    'user:updated': [id: number, name: string];
+    'ping': []; // no arguments
+};
 
 const emitter = new EventEmitter<MyEvents>();
 
-// Full type safety!
-emitter.emit("user:created", { id: 1, name: "John" }); // ✅ Correct
-emitter.emit("user:created", "invalid"); // ❌ Type error
+// Listener gets correct argument types
+emitter.on('user:updated', (id, name) => {
+    console.log(id, name);
+});
+
+// Emit is type-checked
+emitter.emit('user:updated', 1, 'Alice'); // ✅
+emitter.emit('user:updated', '1');        // ❌ Type error
 ```
+
+### 3. Using `keyof` with a separate type map
+If you prefer to keep event names as a union but still want argument types, combine a union with a mapped type:
+
+```typescript
+type EventNames = 'start' | 'stop' | 'tick';
+type EventMap = {
+    [K in EventNames]: K extends 'tick' ? [counter: number] : [];
+};
+
+const emitter = new EventEmitter<EventMap>();
+emitter.on('tick', (counter) => console.log(counter)); // counter is number
+```
+
+---
 
 ## Error Handling
 
-All listener errors are caught and logged to console, preventing emitter crashes:
+By default, all listener errors are caught to prevent the emitter from crashing.  
+- If `logErrors` is `true` (default), errors are printed to `console.error`.  
+- Even with `logErrors: false`, you can still intercept errors globally using `onListenerError` for custom logging or reporting.
 
-```javascript
-emitter.on("data:received", () => {
-    throw new Error("Something went wrong!");
-});
-
-// Error is caught and logged, emitter continues working
-emitter.emit("data:received");
-```
+---
 
 ## Performance Notes
 
--   🔄 Listener arrays are copied before iteration to allow safe modification during emission
--   ⚡ Event existence checks are optimized with direct property access
--   🗑️ Automatic cleanup prevents memory leaks
--   📏 No external dependencies
+- **Snapshotted iteration**: Listener arrays are copied before emission. If a listener calls `off()` on itself during emission, the current cycle continues safely without skipping elements.
+- **Zero dependencies**: Ultra-small bundle size.
+- **Memory management**: Event keys are deleted from the internal store when the last listener is removed, reducing memory usage over time.
+
+---
 
 ## Browser Support
 
 | Feature    | Support         |
-| ---------- | --------------- |
+|------------|-----------------|
 | ES2022+    | Modern browsers |
 | TypeScript | 4.0+            |
 | Node.js    | 14+             |
 
-## License
-
-MIT License - feel free to use in commercial projects.
-
-## Contributing
-
-Contributions welcome! Please ensure:
-
--   ✅ All tests pass
--   ✅ TypeScript types are maintained
--   ✅ New features include tests
--   ✅ Code follows existing style
-
 ---
 
-**Made with ❤️ by [supercat1337](https://github.com/supercat1337)**
+## License
+
+MIT © [supercat1337](https://github.com/supercat1337)

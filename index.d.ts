@@ -1,2 +1,2 @@
-export { EventEmitter } from "./dist/event-emitter.esm.js";
-//# sourceMappingURL=index.d.ts.map
+export { EventEmitterLite } from "./src/event-emitter-lite.js";
+export { EventEmitter } from "./src/event-emitter.js";
