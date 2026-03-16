@@ -1,8 +1,8 @@
 /**
- * @template {string | Record<string, any[]>} [Events=string]
+ * @template {string | symbol | Record<string|symbol, any[]>} [Events=string]
  * @extends {EventEmitterLite<Events>}
  */
-export class EventEmitter<Events extends string | Record<string, any[]> = string> extends EventEmitterLite<Events> {
+export class EventEmitter<Events extends string | symbol | Record<string | symbol, any[]> = string> extends EventEmitterLite<Events> {
     /**
      * Is the event emitter destroyed?
      * @type {boolean}
@@ -10,20 +10,20 @@ export class EventEmitter<Events extends string | Record<string, any[]> = string
     get isDestroyed(): boolean;
     /**
      * Wait for a specific event to be emitted.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol? Events : keyof Events} K
      * @param {K} event - The event to wait for.
      * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, waits indefinitely.
      * @returns {Promise<boolean>} - Resolves with true if event emitted, false on timeout.
      */
-    waitForEvent<K extends Events extends string ? Events : keyof Events>(event: K, max_wait_ms?: number): Promise<boolean>;
+    waitForEvent<K extends Events extends string | symbol ? Events : keyof Events>(event: K, max_wait_ms?: number): Promise<boolean>;
     /**
      * Wait for any of the specified events to be emitted.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string  | symbol? Events : keyof Events} K
      * @param {K[]} events - Array of event names.
      * @param {number} [max_wait_ms=0] - Maximum time to wait in ms.
      * @returns {Promise<boolean>} - Resolves with true if any event emitted, false on timeout.
      */
-    waitForAnyEvent<K extends Events extends string ? Events : keyof Events>(events: K[], max_wait_ms?: number): Promise<boolean>;
+    waitForAnyEvent<K extends Events extends string | symbol ? Events : keyof Events>(events: K[], max_wait_ms?: number): Promise<boolean>;
     /**
      * Clear all events
      */
@@ -34,10 +34,10 @@ export class EventEmitter<Events extends string | Record<string, any[]> = string
     destroy(): void;
     /**
      * Clears all listeners for a specified event.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string  | symbol? Events : keyof Events} K
      * @param {K} event
      */
-    clearEventListeners<K extends Events extends string ? Events : keyof Events>(event: K): void;
+    clearEventListeners<K extends Events extends string | symbol ? Events : keyof Events>(event: K): void;
     /**
      * onHasEventListeners() is used to subscribe to the "#has-listeners" event. This event is emitted when the number of listeners for any event (except "#has-listeners" and "#no-listeners") goes from 0 to 1.
      * @param {Function} callback

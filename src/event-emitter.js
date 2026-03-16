@@ -2,7 +2,7 @@
 import { EventEmitterLite } from './event-emitter-lite.js';
 
 /**
- * @template {string | Record<string, any[]>} [Events=string]
+ * @template {string | symbol | Record<string|symbol, any[]>} [Events=string]
  * @extends {EventEmitterLite<Events>}
  */
 export class EventEmitter extends EventEmitterLite {
@@ -26,7 +26,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      */
@@ -47,7 +47,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * Remove an event listener from an event
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      */
@@ -96,7 +96,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * emit is used to trigger an event
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {...any} args
      */
@@ -157,7 +157,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * Wait for a specific event to be emitted.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol? Events : keyof Events} K
      * @param {K} event - The event to wait for.
      * @param {number} [max_wait_ms=0] - Maximum time to wait in ms. If 0, waits indefinitely.
      * @returns {Promise<boolean>} - Resolves with true if event emitted, false on timeout.
@@ -168,7 +168,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * Wait for any of the specified events to be emitted.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string  | symbol? Events : keyof Events} K
      * @param {K[]} events - Array of event names.
      * @param {number} [max_wait_ms=0] - Maximum time to wait in ms.
      * @returns {Promise<boolean>} - Resolves with true if any event emitted, false on timeout.
@@ -212,7 +212,7 @@ export class EventEmitter extends EventEmitterLite {
     clear() {
         if (this.#isDestroyed) return;
 
-        /** @type {(Events extends string ? Events : keyof Events)[]} */
+        /** @type {(Events extends string  | symbol? Events : keyof Events)[]} */
         // @ts-ignore
         const eventNames = Object.keys(this.events);
 
@@ -238,7 +238,7 @@ export class EventEmitter extends EventEmitterLite {
 
     /**
      * Clears all listeners for a specified event.
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string  | symbol? Events : keyof Events} K
      * @param {K} event
      */
     clearEventListeners(event) {

@@ -3,11 +3,11 @@
 export const ORIGINAL = Symbol('original');
 
 /**
- * @template {string | Record<string, any[]>} [Events=string]
+ * @template {string | symbol | Record<string|symbol, any[]>} [Events=string]
  */
 export class EventEmitterLite {
     /**
-     * @type {Object.<Events extends string ? Events : keyof Events, Function[]>}
+     * @type {Object.<Events extends string | symbol ? Events : keyof Events, Function[]>}
      */
     events = Object.create(null);
 
@@ -19,7 +19,7 @@ export class EventEmitterLite {
 
     /**
      * on is used to add a callback function that's going to be executed when the event is triggered
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      * @returns {() => void}
@@ -34,7 +34,7 @@ export class EventEmitterLite {
 
     /**
      * Add a one-time listener
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      * @returns {()=>void}
@@ -50,7 +50,7 @@ export class EventEmitterLite {
 
     /**
      * off is an alias for removeListener
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      */
@@ -60,7 +60,7 @@ export class EventEmitterLite {
 
     /**
      * Remove an event listener from an event
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {Function} listener
      */
@@ -80,7 +80,7 @@ export class EventEmitterLite {
 
     /**
      * emit is used to trigger an event
-     * @template {Events extends string ? Events : keyof Events} K
+     * @template {Events extends string | symbol ? Events : keyof Events} K
      * @param {K} event
      * @param {...any} args
      */

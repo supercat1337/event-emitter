@@ -1,25 +1,52 @@
 {
     "name": "@supercat1337/event-emitter",
-    "version": "2.0.0",
-    "description": "Event Emitter",
+    "version": "2.0.1",
+    "description": "Lightweight typed event emitter with Symbol support, one-time listeners, and zero dependencies. Works in Node.js and browsers.",
     "main": "index.js",
+    "type": "module",
+    "exports": {
+        ".": "./index.js",
+        "./package.json": "./package.json"
+    },
+    "types": "./index.d.ts",
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "src/**/*.js",
+        "src/**/*.d.ts"
+    ],
     "scripts": {
         "test": "c8 ava",
-        "create_types": "npm run remove_type_files && npx -p typescript tsc --project my.tsconfig.types.json",
-        "remove_type_files": "del /q *.d.ts *.d.ts.map && cd src && del /s /q *.d.ts *.d.ts.map && cd ../src && del /s /q *.d.ts *.d.ts.map && cd .."
+        "clean": "shx rm -f *.d.ts *.d.ts.map && shx rm -rf src/**/*.d.ts src/**/*.d.ts.map",
+        "build:types": "npm run clean && tsc --project my.tsconfig.types.json",
+        "prepublishOnly": "npm run build:types"
     },
-    "author": "Supercat",
+    "keywords": [
+        "event",
+        "emitter",
+        "eventemitter",
+        "event-emitter",
+        "typed",
+        "typescript",
+        "symbols",
+        "lightweight",
+        "tiny",
+        "zero-dependencies",
+        "browser",
+        "node",
+        "events",
+        "pubsub",
+        "observer"
+    ],
+    "author": "Albert Bazaleev",
     "license": "MIT",
     "devDependencies": {
+        "@types/node": "^20.12.2",
         "ava": "^6.1.2",
         "c8": "^9.1.0",
-        "@types/node": "^20.12.2"
+        "shx": "^0.4.0",
+        "typescript": "^5.4.3"
     },
-    "type": "module",
-    "keywords": [
-        "typed event emitter",
-        "typed event bus"
-    ],
     "publishConfig": {
         "registry": "https://registry.npmjs.org"
     },
