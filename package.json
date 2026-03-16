@@ -53,6 +53,6 @@
     "homepage": "https://github.com/supercat1337/event-emitter",
     "repository": {
         "type": "git",
-        "url": "https://github.com/supercat1337/event-emitter.git"
+        "url": "git+https://github.com/supercat1337/event-emitter.git"
     }
 }
