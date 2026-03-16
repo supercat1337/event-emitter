@@ -18,8 +18,7 @@
     "scripts": {
         "test": "c8 ava",
         "clean": "shx rm -f *.d.ts *.d.ts.map && shx rm -rf src/**/*.d.ts src/**/*.d.ts.map",
-        "build:types": "npm run clean && tsc --project my.tsconfig.types.json",
-        "prepublishOnly": "npm run build:types"
+        "build:types": "npm run clean && tsc --project my.tsconfig.types.json"
     },
     "keywords": [
         "event",
